@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
 import Login from './components/Login';
 import ItemsList from './components/ItemsList';
+import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState('');
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -22,17 +22,17 @@ function App() {
   };
 
   const handleLogout = () => {
-    setToken(null);
+    setToken('');
     setIsLoggedIn(false);
     localStorage.removeItem('token');
   };
 
   return (
     <div className="App">
-      {!isLoggedIn ? (
-        <Login onLogin={handleLogin} />
-      ) : (
+      {isLoggedIn ? (
         <ItemsList token={token} onLogout={handleLogout} />
+      ) : (
+        <Login onLogin={handleLogin} />
       )}
     </div>
   );
