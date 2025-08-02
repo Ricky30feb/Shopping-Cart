@@ -40,6 +40,24 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 - Node.js 16 or higher
 - npm or yarn package manager
 
+## 🎯 Quick Start for Users
+
+**Want to try the application right now?**
+
+1. **Visit the live frontend**: [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart)
+
+2. **Set up the backend locally** (takes 2 minutes):
+   ```bash
+   git clone https://github.com/Ricky30feb/Shopping-Cart.git
+   cd Shopping-Cart/backend
+   go mod download
+   echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
+   go run cmd/seeder/main.go
+   go run main.go
+   ```
+
+3. **That's it!** The frontend will automatically connect to your local backend at `localhost:8080`
+
 ## Installation & Setup
 
 ### Option 1: Use Live Frontend + Local Backend (Recommended)
@@ -138,6 +156,20 @@ The backend runs locally and connects to the deployed frontend. Users only need 
 1. Clone the repository
 2. Set up the backend locally (see installation instructions above)
 3. Access the live frontend which will connect to their local backend
+
+## 📋 User Instructions
+
+### For End Users:
+1. **Access the App**: Go to [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart)
+2. **Setup Backend**: Follow the 2-minute setup in "Quick Start for Users" section above
+3. **Use the App**: Register an account, browse products, add to cart, and place orders!
+
+### For Developers:
+- **Frontend Code**: Already deployed, but you can run locally with `npm start` in the `/frontend` directory
+- **Backend Code**: Must run locally for the API to work
+- **Deployment**: Frontend auto-deploys via GitHub Pages, backend runs locally
+
+⚠️ **Important**: The frontend expects the backend to run on `http://localhost:8080`
 
 ## Environment Configuration
 
