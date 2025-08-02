@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: shopping-cart-backend
+    runtime: go
+    buildCommand: go build -o main .
+    startCommand: ./main
+    plan: free
+    env: go
+    rootDir: backend
+    envVars:
+      - key: JWT_SECRET
+        value: your_super_secure_jwt_secret_key_minimum_32_characters
+      - key: GIN_MODE
+        value: release
+    healthCheckPath: /users
+    autoDeploy: false

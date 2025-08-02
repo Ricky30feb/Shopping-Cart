@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"shopping-cart-backend/controllers"
 	"shopping-cart-backend/database"
 	"shopping-cart-backend/middleware"
@@ -13,6 +14,12 @@ import (
 )
 
 func main() {
+	// Get port from environment variable (Render sets this automatically)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	database.ConnectDatabase()
 	
 	// Auto-seed the database with initial data
@@ -20,11 +27,13 @@ func main() {
 	
 	r := gin.Default()
 	
+	// Enhanced CORS configuration for Render deployment
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://ricky30feb.github.io"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowOrigins:     []string{"http://localhost:3000", "https://ricky30feb.github.io", "*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Requested-With"},
 		AllowCredentials: true,
+		ExposeHeaders:    []string{"Content-Length"},
 	}))
 
 	// Public routes
@@ -45,7 +54,8 @@ func main() {
 		protected.POST("/users/logout", controllers.LogoutUser)
 	}
 
-	r.Run(":8080")
+	log.Printf("Server starting on port %s", port)
+	r.Run(":" + port)
 }
 
 func seedDatabase() {
