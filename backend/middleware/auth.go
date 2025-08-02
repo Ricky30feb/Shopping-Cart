@@ -35,6 +35,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Check if user has an active session
+		if user.Token == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "No active session found"})
+			c.Abort()
+			return
+		}
+
 		if user.Token != tokenString {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Session expired - logged in from another device"})
 			c.Abort()

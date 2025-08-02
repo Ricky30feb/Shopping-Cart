@@ -258,7 +258,9 @@ This application implements **single device login enforcement**, ensuring that u
 
 ### Error Messages
 
-- `"Session expired - logged in from another device"` - When using an old token after new login
+- `"User is already logged in from another device. Please logout first."` - When attempting to login while already logged in from another device
+- `"Session expired - logged in from another device"` - When using a token that has been invalidated
+- `"No active session found"` - When trying to access protected routes after logout
 - `"Authorization header required"` - When no token is provided  
 - `"Invalid token"` - When JWT token is malformed or expired
 - `"User not found"` - When user ID from token doesn't exist
@@ -274,15 +276,15 @@ The project includes a comprehensive Postman collection (`Shopping_Cart_API.post
 - Order processing (checkout, history)
 
 ### Single Device Login Test Suite
-A complete 7-step test sequence that validates single device login functionality:
+A complete test sequence that validates single device login functionality:
 
 1. **Login Device A** → Get token A
 2. **Test Device A Access** → Should work 
-3. **Login Device B** → Get token B (invalidates A)
-4. **Test Device A Access** → Should fail ("logged in from another device")
-5. **Test Device B Access** → Should work 
-6. **Logout Device B** → Clear token B
-7. **Test Device B After Logout** → Should fail
+3. **Attempt Login Device B** → Should fail with "User is already logged in from another device. Please logout first."
+4. **Test Device A Access** → Should still work (session remains active)
+5. **Logout Device A** → Clear token A
+6. **Login Device B** → Should now work (Device A is logged out)
+7. **Test Device B Access** → Should work
 
 ### How to Use Postman Collection
 

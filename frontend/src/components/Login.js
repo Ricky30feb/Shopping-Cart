@@ -64,9 +64,12 @@ const Login = ({ onLogin }) => {
     } catch (error) {
       if (isLoginMode) {
         console.error('Login failed:', error);
-        alert('Invalid username or password. Please try again.');
+        // Show the actual error message from the server
+        const errorMessage = error.response?.data?.error || 'Login failed. Please try again.';
+        alert(errorMessage);
       } else {
-        alert('Username already exists or registration failed. Please try again.');
+        const errorMessage = error.response?.data?.error || 'Username already exists or registration failed. Please try again.';
+        alert(errorMessage);
       }
     }
   };

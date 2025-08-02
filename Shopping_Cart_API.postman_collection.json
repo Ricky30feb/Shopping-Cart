@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Shopping Cart API",
-    "description": "API collection for the Shopping Cart e-commerce application with single device login enforcement. Includes comprehensive tests for authentication, cart management, order processing, and single device login validation.",
+    "description": "API collection for the Shopping Cart e-commerce application with single device login enforcement. Includes comprehensive tests for authentication, cart management, order processing, and single device login validation. Single device login prevents users from logging in from multiple devices simultaneously - subsequent login attempts are rejected until the first session is explicitly logged out.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -56,7 +56,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
             },
             "url": {
               "raw": "http://localhost:8080/users/login",
@@ -99,7 +99,7 @@
     },
     {
       "name": "Single Device Login Tests",
-      "description": "Test scenarios for single device login enforcement",
+      "description": "Test scenarios for single device login enforcement - users cannot login from multiple devices simultaneously",
       "item": [
         {
           "name": "Step 1: Login Device A",
@@ -113,7 +113,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
             },
             "url": {
               "raw": "http://localhost:8080/users/login",
@@ -177,7 +177,7 @@
           ]
         },
         {
-          "name": "Step 3: Login Device B (should invalidate Device A)",
+          "name": "Step 3: Attempt Login Device B (should fail)",
           "request": {
             "method": "POST",
             "header": [
@@ -188,7 +188,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
             },
             "url": {
               "raw": "http://localhost:8080/users/login",
@@ -203,15 +203,13 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Device B login successful\", function () {",
-                  "    pm.response.to.have.status(200);",
+                  "pm.test(\"Device B login should fail\", function () {",
+                  "    pm.response.to.have.status(409);",
                   "});",
                   "",
-                  "pm.test(\"Device B gets new token\", function () {",
+                  "pm.test(\"Should get 'already logged in' message\", function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.token).to.not.be.empty;",
-                  "    pm.collectionVariables.set(\"device_b_token\", jsonData.token);",
-                  "    pm.expect(jsonData.token).to.not.equal(pm.collectionVariables.get(\"device_a_token\"));",
+                  "    pm.expect(jsonData.error).to.include(\"already logged in from another device\");",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -220,14 +218,14 @@
           ]
         },
         {
-          "name": "Step 4: Test Device A Access (should fail)",
+          "name": "Step 4: Test Device A Access (should still work)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{device_a_token}}",
-                "description": "Old token from Device A - should be invalidated"
+                "description": "Token from Device A should still be valid"
               }
             ],
             "url": {
@@ -243,13 +241,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Device A should be logged out\", function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "",
-                  "pm.test(\"Should get 'logged in from another device' message\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.error).to.include(\"logged in from another device\");",
+                  "pm.test(\"Device A should still work\", function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -258,7 +251,7 @@
           ]
         },
         {
-          "name": "Step 5: Test Device B Access (should work)",
+          "name": "Step 5: Test Logout (Device A)",
           "request": {
             "method": "GET",
             "header": [
@@ -301,8 +294,8 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{device_b_token}}",
-                "description": "Current token from Device B"
+                "value": "Bearer {{device_a_token}}",
+                "description": "Current token from Device A"
               }
             ],
             "body": {
@@ -332,14 +325,56 @@
           ]
         },
         {
-          "name": "Step 7: Test Device B Access After Logout (should fail)",
+          "name": "Step 6: Login Device B (should now work)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Device B login successful after A logged out\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Device B gets token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.not.be.empty;",
+                  "    pm.collectionVariables.set(\"device_b_token\", jsonData.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 7: Test Device B Access (should work)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{device_b_token}}",
-                "description": "Token should be invalidated after logout"
+                "description": "Token from Device B login"
               }
             ],
             "url": {
@@ -355,8 +390,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Access should fail after logout\", function () {",
-                  "    pm.response.to.have.status(401);",
+                  "pm.test(\"Device B should work after A logged out\", function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"

@@ -64,6 +64,12 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
+	// Check if user already has an active session (Single Device Login)
+	if user.Token != "" {
+		c.JSON(http.StatusConflict, gin.H{"error": "User is already logged in from another device. Please logout first."})
+		return
+	}
+
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
