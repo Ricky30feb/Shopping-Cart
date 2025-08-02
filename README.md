@@ -51,6 +51,11 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
    git clone https://github.com/Ricky30feb/Shopping-Cart.git
    cd Shopping-Cart/backend
    go mod download
+   export JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters && go run main.go
+   ```
+
+   **Alternative with .env file:**
+   ```bash
    echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
    go run main.go
    ```
@@ -79,8 +84,11 @@ cd Shopping-Cart/backend
 go mod download
 
 # 3. Set up environment variables (CRITICAL STEP)
-echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
+export JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
 # For production, generate a secure secret: openssl rand -base64 32
+
+# Alternative: Create .env file
+# echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
 
 # 4. Start the backend server (auto-seeds database on first run)
 go run main.go
@@ -113,14 +121,17 @@ cd backend
 go mod download
 
 # Set up environment variables (CRITICAL STEP)
-echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
+export JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
 # For production, generate a secure secret: openssl rand -base64 32
+
+# Alternative: Create .env file
+# echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
 
 # Start the backend server (auto-seeds database)
 go run main.go
 ```
 
-**Auto-Seeding Features:**
+**Auto-Seeding Feature:**
 - 🏪 **25 Products**: Electronics, Gaming gear, Smart Home devices, Office supplies, Health & Fitness items
 - 👤 **Test User**: Username: `testuser`, Password: `testpass123`
 - 🔄 **No Duplicates**: Uses smart seeding that won't create duplicate entries
