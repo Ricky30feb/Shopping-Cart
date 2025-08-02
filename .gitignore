@@ -30,5 +30,9 @@ Thumbs.db
 # Database
 backend/shopping_cart.db
 
+# Compiled binaries
+backend/shopping-cart-backend
+backend/*.exe
+
 # Package locks (optional - can be included if team prefers)
 frontend/package-lock.json
