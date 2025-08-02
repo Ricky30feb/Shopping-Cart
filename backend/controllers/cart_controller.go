@@ -24,7 +24,6 @@ func AddItemToCart(c *gin.Context) {
 		return
 	}
 
-	// Validate that item_id is not zero
 	if input.ItemID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
 		return

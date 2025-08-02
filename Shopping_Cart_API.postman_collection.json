@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Shopping Cart API",
-    "description": "API collection for the Shopping Cart e-commerce application",
+    "description": "API collection for the Shopping Cart e-commerce application with single device login enforcement. Includes comprehensive tests for authentication, cart management, order processing, and single device login validation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -66,6 +66,303 @@
               "path": ["users", "login"]
             }
           }
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token from login - clears server-side session"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Single Device Login Tests",
+      "description": "Test scenarios for single device login enforcement",
+      "item": [
+        {
+          "name": "Step 1: Login Device A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Login successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Token received\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.not.be.empty;",
+                  "    pm.collectionVariables.set(\"device_a_token\", jsonData.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 2: Test Device A Access",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{device_a_token}}",
+                "description": "Token from Device A login"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/carts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["carts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Device A can access protected route\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 3: Login Device B (should invalidate Device A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Device B login successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Device B gets new token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.not.be.empty;",
+                  "    pm.collectionVariables.set(\"device_b_token\", jsonData.token);",
+                  "    pm.expect(jsonData.token).to.not.equal(pm.collectionVariables.get(\"device_a_token\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 4: Test Device A Access (should fail)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{device_a_token}}",
+                "description": "Old token from Device A - should be invalidated"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/carts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["carts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Device A should be logged out\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Should get 'logged in from another device' message\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.include(\"logged in from another device\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 5: Test Device B Access (should work)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{device_b_token}}",
+                "description": "Current valid token from Device B"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/carts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["carts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Device B should still work\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 6: Test Logout (Device B)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{device_b_token}}",
+                "description": "Current token from Device B"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "logout"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Logout successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 7: Test Device B Access After Logout (should fail)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{device_b_token}}",
+                "description": "Token should be invalidated after logout"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/carts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["carts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Access should fail after logout\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -222,6 +519,16 @@
       "key": "token",
       "value": "",
       "description": "JWT token received from login endpoint"
+    },
+    {
+      "key": "device_a_token",
+      "value": "",
+      "description": "Token for testing Device A in single device login tests"
+    },
+    {
+      "key": "device_b_token",
+      "value": "",
+      "description": "Token for testing Device B in single device login tests"
     }
   ]
 }

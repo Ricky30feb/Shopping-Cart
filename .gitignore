@@ -1,6 +1,5 @@
 # Dependencies
 frontend/node_modules/
-backend/shopping_cart.db
 
 # Build outputs
 frontend/build/
@@ -28,7 +27,7 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Go
+# Database
 backend/shopping_cart.db
 
 # Package locks (optional - can be included if team prefers)

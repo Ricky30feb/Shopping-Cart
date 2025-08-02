@@ -12,6 +12,7 @@ import (
 func main() {
 	database.ConnectDatabase()
 	r := gin.Default()
+	
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000", "https://ricky30feb.github.io"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
@@ -19,12 +20,14 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Public routes
 	r.POST("/users", controllers.CreateUser)
 	r.GET("/users", controllers.GetUsers)
 	r.POST("/users/login", controllers.LoginUser)
 	r.POST("/items", controllers.CreateItem)
 	r.GET("/items", controllers.GetItems)
 
+	// Protected routes
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware())
 	{
@@ -32,6 +35,7 @@ func main() {
 		protected.GET("/carts", controllers.GetCarts)
 		protected.POST("/orders", controllers.CreateOrder)
 		protected.GET("/orders", controllers.GetOrders)
+		protected.POST("/users/logout", controllers.LogoutUser)
 	}
 
 	r.Run(":8080")

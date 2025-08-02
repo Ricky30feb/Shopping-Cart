@@ -51,18 +51,3 @@ func GetOrders(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, orders)
 }
-
-func GetUserOrders(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-
-	var orders []models.Order
-	if err := database.DB.Where("user_id = ?", userID).Find(&orders).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch orders"})
-		return
-	}
-	c.JSON(http.StatusOK, orders)
-}

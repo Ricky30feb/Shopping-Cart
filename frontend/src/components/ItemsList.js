@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  FaShoppingCart, 
   FaSignOutAlt, 
   FaPlus,
   FaBox,
-  FaCheck,
-  FaTimes,
   FaShoppingBag,
   FaCreditCard,
   FaHistory
@@ -16,14 +13,6 @@ import './ItemsList.css';
 
 const ItemsList = ({ token, onLogout }) => {
   const [items, setItems] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loadingItems, setLoadingItems] = useState(new Set());
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [cartLoading, setCartLoading] = useState(false);
-  const [ordersLoading, setOrdersLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchItems();
@@ -39,12 +28,8 @@ const ItemsList = ({ token, onLogout }) => {
   };
 
   const addToCart = async (itemId) => {
-    setLoadingItems(prev => new Set(prev).add(itemId));
-    setError('');
-    setSuccess('');
-    
     try {
-      const response = await axios.post(`${API_BASE_URL}/carts`, {
+      await axios.post(`${API_BASE_URL}/carts`, {
         item_id: parseInt(itemId)
       }, {
         headers: {
@@ -53,22 +38,27 @@ const ItemsList = ({ token, onLogout }) => {
         }
       });
       
-      setSuccess('Item added to cart successfully!');
-      setTimeout(() => setSuccess(''), 3000);
+      alert('Item added to cart successfully!');
     } catch (error) {
-      setError('Error adding item to cart');
-      setTimeout(() => setError(''), 3000);
-    } finally {
-      setLoadingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
+      alert('Error adding item to cart');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/users/logout`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      onLogout();
     }
   };
 
   const showCart = async () => {
-    setCartLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/carts`, {
         headers: {
@@ -88,18 +78,13 @@ const ItemsList = ({ token, onLogout }) => {
         console.log('Your cart is empty');
         alert('Your cart is empty');
       }
-      
-      setCartItems(validCartItems);
     } catch (error) {
       console.error('Error fetching cart items:', error);
       alert('Error fetching cart items');
-    } finally {
-      setCartLoading(false);
     }
   };
 
   const showOrderHistory = async () => {
-    setOrdersLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/orders`, {
         headers: {
@@ -120,24 +105,28 @@ const ItemsList = ({ token, onLogout }) => {
         console.log('No orders found');
         alert('No orders found');
       }
-      
-      setOrders(orders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       alert('Error fetching orders');
-    } finally {
-      setOrdersLoading(false);
     }
   };
 
   const handleCheckout = async () => {
-    if (cartItems.length === 0) {
-      console.log('Cannot place an empty order. Add something to cart first.');
-      alert('Cannot place an empty order. Add something to cart first.');
-      return;
-    }
-    setCheckoutLoading(true);
     try {
+      const cartResponse = await axios.get(`${API_BASE_URL}/carts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const validCartItems = (cartResponse.data || []).filter(item => item.item_id > 0);
+      
+      if (validCartItems.length === 0) {
+        console.log('Cannot place an empty order. Add something to cart first.');
+        alert('Cannot place an empty order. Add something to cart first.');
+        return;
+      }
+
       await axios.post(`${API_BASE_URL}/orders`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -146,89 +135,48 @@ const ItemsList = ({ token, onLogout }) => {
 
       console.log('Order successful');
       alert('Order successful');
-      
-      setCartItems([]);
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Error placing order');
-    } finally {
-      setCheckoutLoading(false);
     }
   };
 
   return (
     <div className="shopping-container">
-      <div className="shopping-scroll-overlay">
-        <div className="shopping-content">
-          <div className="shopping-wrapper">
-            <div className="shopping-card">
-          {/* Header */}
-          <div className="shopping-header">
-            <div className="logo">
-              <div className="logo-icon">
-                <FaShoppingCart/>
-              </div>
-              <h1>Kartify</h1>
-            </div>
-            <p className="welcome-text">
-              Discover amazing products and add them to your cart
-            </p>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="shopping-tabs">
+      <div className="shopping-content">
+        <div className="top-toolbar">
+          <div className="toolbar-buttons">
             <button 
               className="nav-button nav-button-checkout"
               onClick={handleCheckout}
             >
               <FaCreditCard className="tab-icon" />
-              {checkoutLoading ? 'Processing...' : 'Checkout'}
+              Checkout
             </button>
             <button 
               className="nav-button nav-button-cart"
               onClick={showCart}
-              disabled={cartLoading}
             >
               <FaShoppingBag className="tab-icon" />
-              {cartLoading ? 'Loading...' : 'Cart'}
+              Cart
             </button>
             <button 
               className="nav-button nav-button-orders"
               onClick={showOrderHistory}
-              disabled={ordersLoading}
             >
               <FaHistory className="tab-icon" />
-              {ordersLoading ? 'Loading...' : 'Order History'}
+              Order History
             </button>
             <button 
               className="nav-button nav-button-logout"
-              onClick={onLogout}
+              onClick={handleLogout}
             >
               <FaSignOutAlt className="tab-icon" />
               Logout
             </button>
           </div>
-
-          {/* Messages */}
-          {error && (
-            <div className="message error-message">
-              <span className="message-icon">
-                <FaTimes />
-              </span>
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="message success-message">
-              <span className="message-icon">
-                <FaCheck />
-              </span>
-              {success}
-            </div>
-          )}
-
-          {/* Items Section */}
+        </div>
+        <div className="shopping-card">
           <div className="items-section">
             <div className="section-header">
               <h3><FaBox className="section-icon" /> Available Items</h3>
@@ -252,27 +200,15 @@ const ItemsList = ({ token, onLogout }) => {
                       <button 
                         onClick={() => addToCart(item.id || item.ID)} 
                         className="add-button"
-                        disabled={loadingItems.has(item.id || item.ID)}
                       >
-                        {loadingItems.has(item.id || item.ID) ? (
-                          <>
-                            <span className="spinner"></span>
-                            Adding...
-                          </>
-                        ) : (
-                          <>
-                            <FaPlus className="button-icon" />
-                            Add to Cart
-                          </>
-                        )}
+                        <FaPlus className="button-icon" />
+                        Add to Cart
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-            </div>
           </div>
         </div>
       </div>

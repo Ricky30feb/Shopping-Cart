@@ -76,3 +76,21 @@ func LoginUser(c *gin.Context) {
 	user.Password = ""
 	c.JSON(http.StatusOK, user)
 }
+
+func LogoutUser(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	user.Token = ""
+	database.DB.Save(&user)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+}

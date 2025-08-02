@@ -19,7 +19,6 @@ func main() {
 }
 
 func seedDatabase() {
-	// Create a test user
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatalf("Failed to hash password: %v", err)
@@ -34,7 +33,6 @@ func seedDatabase() {
 		log.Fatalf("Failed to seed user: %v", err)
 	}
 
-	// Create some items
 	items := []models.Item{
 		{Name: "Laptop", Status: "available"},
 		{Name: "Phone", Status: "available"},

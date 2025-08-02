@@ -10,6 +10,7 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 ## Features
 
 - **Secure Authentication**: JWT-based user registration and login
+- **🔐 Single Device Login**: Users can only be logged in from one device at a time (enforced server-side)
 - **Product Catalog**: Browse products with filtering by category and availability
 - **Shopping Cart**: Add items with quantity management and real-time updates
 - **Order Processing**: Complete checkout flow with order history tracking
@@ -17,6 +18,7 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 - **RESTful API**: Well-structured endpoints with comprehensive error handling
 - **Data Validation**: Input validation and sanitization on both client and server
 - **Security**: Password hashing, secure JWT tokens, and CORS protection
+- **🧪 Comprehensive Testing**: Postman collection with automated single device login tests
 
 ## Tech Stack
 
@@ -212,11 +214,109 @@ ALLOWED_ORIGINS=http://localhost:3000
 
 ⚠️ **Important**: The application will fail to start if `JWT_SECRET` is not set or is less than 32 characters long.
 
+## Single Device Login Feature
+
+This application implements **single device login enforcement**, ensuring that users can only be logged in from one device at a time, as per the business requirements.
+
+### How It Works
+
+1. **Login**: When a user logs in, a JWT token is generated and stored in the database
+2. **Previous Sessions Invalidated**: Any existing tokens for that user are automatically invalidated
+3. **Token Validation**: Every API request validates that the provided token matches the stored token
+4. **Automatic Logout**: If a user logs in from another device, previous sessions are automatically invalidated
+5. **Explicit Logout**: Users can explicitly logout, clearing the server-side token
+
+### Security Benefits
+
+ **Prevents concurrent sessions** from multiple devices  
+ **Forces logout** when user logs in elsewhere  
+ **Single source of truth** for active sessions  
+ **Clear error messaging** when session is invalidated  
+ **Proper session cleanup** on logout  
+
+### Error Messages
+
+- `"Session expired - logged in from another device"` - When using an old token after new login
+- `"Authorization header required"` - When no token is provided  
+- `"Invalid token"` - When JWT token is malformed or expired
+- `"User not found"` - When user ID from token doesn't exist
+
+## API Testing with Postman
+
+The project includes a comprehensive Postman collection (`Shopping_Cart_API.postman_collection.json`) with:
+
+### Standard API Tests
+- User registration and authentication
+- Product catalog management
+- Cart operations (add, view items)
+- Order processing (checkout, history)
+
+### Single Device Login Test Suite
+A complete 7-step test sequence that validates single device login functionality:
+
+1. **Login Device A** → Get token A
+2. **Test Device A Access** → Should work 
+3. **Login Device B** → Get token B (invalidates A)
+4. **Test Device A Access** → Should fail ("logged in from another device")
+5. **Test Device B Access** → Should work 
+6. **Logout Device B** → Clear token B
+7. **Test Device B After Logout** → Should fail
+
+### How to Use Postman Collection
+
+1. **Import** `Shopping_Cart_API.postman_collection.json` into Postman
+2. **Start your backend** server (`go run main.go`)
+3. **Create a test user** using the "Create User" request
+4. **Run the "Single Device Login Tests" folder** to validate the functionality
+5. **Use individual requests** for manual API testing
+
+For detailed instructions, see `Postman_Collection_Guide.md`.
+
+## 📋 Business Requirements Compliance
+
+This application fully implements the following business requirements:
+
+###  1. User Registration
+- **Requirement**: "When a user will come to your platform and signup (POST /users API is called), a new User account gets created."
+- **Implementation**: `POST /users` endpoint creates new user accounts with secure password hashing
+
+###  2. User Authentication with Single Device Login
+- **Requirement**: "The user needs to be logged in order to create a cart. If the user already has an account, the user will login using POST /users/login API which will return a token for further requests in the user's session. A user can only be logged in from a single device at a time i.e. there'll always be a single token for the user."
+- **Implementation**: 
+  - `POST /users/login` returns JWT token
+  - Server-side token validation ensures single device login
+  - Previous tokens automatically invalidated on new login
+  - `POST /users/logout` explicitly clears server sessions
+
+### 3. Shopping Cart Management
+- **Requirement**: "When the user starts shopping and selects Items, the Items will get added to the Cart. This will be done by POST /carts API. A single user can have only a single cart, so you'll need to identify the Cart by the User's ID."
+- **Implementation**: 
+  - `POST /carts` adds items to user's cart
+  - One active cart per user (identified by User ID)
+  - Cart status management (active → ordered)
+
+### 4. Inventory Simplification
+- **Requirement**: "For sake of simplicity let's assume that we don't want to manage inventory yet i.e. we don't have to keep track of the number of items, whether it's in stock or out of stock, etc."
+- **Implementation**: No inventory tracking implemented, items always available
+
+### 5. Order Processing
+- **Requirement**: "The cart will get converted into an order when the POST /orders API is called."
+- **Implementation**: `POST /orders` converts active cart to order and updates cart status
+
+### 6. Listing Endpoints
+- **Requirement**: "There should also be listing endpoints for User, Items, Carts and Orders."
+- **Implementation**: 
+  - `GET /users` - List all users
+  - `GET /items` - List all items
+  - `GET /carts` - Get user's cart items
+  - `GET /orders` - Get user's order history
+
 ## API Documentation
 
 ### Authentication Endpoints
 - `POST /users` - Register new user
-- `POST /users/login` - Authenticate user
+- `POST /users/login` - Authenticate user and get JWT token
+- `POST /users/logout` - **Logout and invalidate server-side token** 🔐
 - `GET /users` - Get all users (admin)
 
 ### Product Endpoints
@@ -255,6 +355,18 @@ Content-Type: application/json
   "quantity": 2
 }
 ```
+
+#### Logout User (Single Device Login)
+```bash
+POST /users/logout
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{}
+```
+
+**Response**: `{"message": "Logged out successfully"}`  
+**Effect**: Invalidates the token server-side, forcing logout from all devices.
 
 ## Database Schema
 
@@ -321,6 +433,9 @@ go run cmd/seeder/main.go  # Recreate with fresh data
 
 - Password hashing with bcrypt
 - JWT token authentication with expiration
+- Single device login enforcement with server-side token validation**
+- Automatic session invalidation when logging in from new device**
+- Explicit logout endpoint that clears server-side sessions**
 - Input validation and sanitization
 - CORS protection
 - SQL injection prevention through ORM
