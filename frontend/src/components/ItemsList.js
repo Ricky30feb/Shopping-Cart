@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  FaShoppingCart, 
+  FaSignOutAlt, 
+  FaPlus,
+  FaBox,
+  FaCheck,
+  FaTimes,
+  FaShoppingBag,
+  FaCreditCard,
+  FaHistory
+} from 'react-icons/fa';
 import './ItemsList.css';
 
 const ItemsList = ({ token, onLogout }) => {
   const [items, setItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [showCartItems, setShowCartItems] = useState(false);
-  const [showOrders, setShowOrders] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchItems();
@@ -23,144 +38,229 @@ const ItemsList = ({ token, onLogout }) => {
   };
 
   const addToCart = async (itemId) => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
     try {
-      await axios.post('http://localhost:8080/carts', {
-        item_id: itemId
+      const response = await axios.post('http://localhost:8080/carts', {
+        item_id: parseInt(itemId) // Ensure it's a number
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
-      alert('Item added to cart!');
+      
+      setSuccess('Item added to cart successfully!');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      alert('Error adding item to cart');
+      setError('Error adding item to cart');
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setLoading(false);
     }
   };
 
   const showCart = async () => {
+    setCartLoading(true);
     try {
       const response = await axios.get('http://localhost:8080/carts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      setCartItems(response.data || []);
-      setShowCartItems(true);
-      setShowOrders(false);
+      
+      const validCartItems = (response.data || []).filter(item => item.item_id > 0);
+      
+      if (validCartItems && validCartItems.length > 0) {
+        const cartDetails = validCartItems.map(item => 
+          `Cart ID: ${item.cart_id}, Item ID: ${item.item_id}`
+        ).join('\n');
+        
+        window.alert(`Cart Items:\n${cartDetails}`);
+      } else {
+        window.alert('Your cart is empty');
+      }
+      
+      setCartItems(validCartItems);
     } catch (error) {
-      alert('Error fetching cart items');
+      window.alert('Error fetching cart items');
+    } finally {
+      setCartLoading(false);
     }
   };
 
   const showOrderHistory = async () => {
+    setOrdersLoading(true);
     try {
       const response = await axios.get('http://localhost:8080/orders', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      setOrders(response.data || []);
-      setShowOrders(true);
-      setShowCartItems(false);
+      
+      const orders = response.data || [];
+      
+      if (orders.length > 0) {
+        const orderDetails = orders.map(order => 
+          `Order ID: ${order.id || order.ID}`
+        ).join('\n');
+        
+        window.alert(`Order History:\n${orderDetails}`);
+      } else {
+        window.alert('No orders found');
+      }
+      
+      setOrders(orders);
     } catch (error) {
-      alert('Error fetching orders');
+      window.alert('Error fetching orders');
+    } finally {
+      setOrdersLoading(false);
     }
   };
 
   const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      window.alert('Cannot place an empty order. Add something to cart first.');
+      return;
+    }
+    setCheckoutLoading(true);
     try {
       await axios.post('http://localhost:8080/orders', {}, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      alert('Order placed successfully!');
+      
+      // Show toast message as required
+      window.alert('Order successful');
+      
+      // Clear cart
       setCartItems([]);
-      setShowCartItems(false);
     } catch (error) {
-      alert('Error placing order');
+      window.alert('Error placing order');
+    } finally {
+      setCheckoutLoading(false);
     }
   };
 
-  const backToItems = () => {
-    setShowCartItems(false);
-    setShowOrders(false);
-  };
-
   return (
-    <div className="items-container">
-      <div className="header">
-        <h2>Shopping Cart</h2>
-        <div className="nav-buttons">
-          <button onClick={backToItems} className="nav-button">Items</button>
-          <button onClick={showCart} className="nav-button">Cart</button>
-          <button onClick={showOrderHistory} className="nav-button">Order History</button>
-          <button onClick={onLogout} className="logout-button">Logout</button>
-        </div>
-      </div>
+    <div className="shopping-container">
+      <div className="shopping-wrapper">
+        <div className="shopping-card">
+          {/* Header */}
+          <div className="shopping-header">
+            <div className="logo">
+              <div className="logo-icon">
+                <FaShoppingCart/>
+              </div>
+              <h1>Kartify</h1>
+            </div>
+            <p className="welcome-text">
+              Discover amazing products and add them to your cart
+            </p>
+          </div>
 
-      {!showCartItems && !showOrders && (
-        <div className="items-grid">
-          <h3>Available Items</h3>
-          {items.length === 0 ? (
-            <p>No items available</p>
-          ) : (
-            <div className="items-list">
-              {items.map((item) => (
-                <div key={item.ID} className="item-card">
-                  <h4>{item.name}</h4>
-                  <p>Status: {item.status}</p>
-                  <button onClick={() => addToCart(item.ID)} className="add-button">
-                    Add to Cart
-                  </button>
-                </div>
-              ))}
+          {/* Navigation Tabs */}
+          <div className="shopping-tabs">
+            <button 
+              className="nav-button nav-button-checkout"
+              onClick={handleCheckout}
+            >
+              <FaCreditCard className="tab-icon" />
+              {checkoutLoading ? 'Processing...' : 'Checkout'}
+            </button>
+            <button 
+              className="nav-button nav-button-cart"
+              onClick={showCart}
+              disabled={cartLoading}
+            >
+              <FaShoppingBag className="tab-icon" />
+              {cartLoading ? 'Loading...' : 'Cart'}
+            </button>
+            <button 
+              className="nav-button nav-button-orders"
+              onClick={showOrderHistory}
+              disabled={ordersLoading}
+            >
+              <FaHistory className="tab-icon" />
+              {ordersLoading ? 'Loading...' : 'Order History'}
+            </button>
+            <button 
+              className="nav-button nav-button-logout"
+              onClick={onLogout}
+            >
+              <FaSignOutAlt className="tab-icon" />
+              Logout
+            </button>
+          </div>
+
+          {/* Messages */}
+          {error && (
+            <div className="message error-message">
+              <span className="message-icon">
+                <FaTimes />
+              </span>
+              {error}
             </div>
           )}
-        </div>
-      )}
 
-      {showCartItems && (
-        <div className="cart-section">
-          <h3>Cart Items</h3>
-          {cartItems.length === 0 ? (
-            <p>Your cart is empty</p>
-          ) : (
-            <>
-              <div className="cart-items">
-                {cartItems.map((cartItem, index) => (
-                  <div key={index} className="cart-item">
-                    <p>Cart ID: {cartItem.cart_id}</p>
-                    <p>Item ID: {cartItem.item_id}</p>
+          {success && (
+            <div className="message success-message">
+              <span className="message-icon">
+                <FaCheck />
+              </span>
+              {success}
+            </div>
+          )}
+
+          {/* Items Section */}
+          <div className="items-section">
+            <div className="section-header">
+              <h3><FaBox className="section-icon" /> Available Items</h3>
+            </div>
+            {items.length === 0 ? (
+              <div className="empty-state">
+                <FaBox className="empty-icon" />
+                <p>No items available</p>
+              </div>
+            ) : (
+              <div className="items-grid">
+                {items.map((item) => (
+                  <div key={item.ID} className="item-card">
+                    <div className="item-header">
+                      <h4>{item.name}</h4>
+                      <span className={`status-badge ${item.status.toLowerCase()}`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <div className="item-actions">
+                      <button 
+                        onClick={() => addToCart(item.id || item.ID)} 
+                        className="add-button"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <span className="spinner"></span>
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <FaPlus className="button-icon" />
+                            Add to Cart
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
-              <button onClick={handleCheckout} className="checkout-button">
-                Checkout
-              </button>
-            </>
-          )}
+            )}
+          </div>
         </div>
-      )}
-
-      {showOrders && (
-        <div className="orders-section">
-          <h3>Order History</h3>
-          {orders.length === 0 ? (
-            <p>No orders found</p>
-          ) : (
-            <div className="orders-list">
-              {orders.map((order) => (
-                <div key={order.ID} className="order-item">
-                  <p>Order ID: {order.ID}</p>
-                  <p>Cart ID: {order.cart_id}</p>
-                  <p>Date: {new Date(order.CreatedAt).toLocaleDateString()}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      </div>
     </div>
   );
 };

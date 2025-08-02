@@ -24,6 +24,19 @@ func AddItemToCart(c *gin.Context) {
 		return
 	}
 
+	// Validate that item_id is not zero
+	if input.ItemID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		return
+	}
+
+	// Verify that the item exists
+	var existingItem models.Item
+	if err := database.DB.First(&existingItem, input.ItemID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Item not found"})
+		return
+	}
+
 	// Get or create cart for user
 	var cart models.Cart
 	err := database.DB.Where("user_id = ? AND status = ?", userID, "active").First(&cart).Error
@@ -67,7 +80,8 @@ func GetCarts(c *gin.Context) {
 	}
 
 	var cartItems []models.CartItem
-	database.DB.Where("cart_id = ?", cart.ID).Find(&cartItems)
+	// Only return cart items with valid item IDs (> 0)
+	database.DB.Where("cart_id = ? AND item_id > 0", cart.ID).Find(&cartItems)
 	
 	c.JSON(http.StatusOK, cartItems)
 }
