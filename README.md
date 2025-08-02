@@ -8,17 +8,15 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 **Backend**: Runs locally on your machine
 
 ## Features
-
 - **Secure Authentication**: JWT-based user registration and login
-- **🔐 Single Device Login**: Users can only be logged in from one device at a time (enforced server-side)
-- **Product Catalog**: Browse products with filtering by category and availability
+- **Single Device Login**: Users can only be logged in from one device at a time (enforced server-side)
 - **Shopping Cart**: Add items with quantity management and real-time updates
 - **Order Processing**: Complete checkout flow with order history tracking
 - **Responsive Design**: Mobile-first UI that works across all devices
 - **RESTful API**: Well-structured endpoints with comprehensive error handling
 - **Data Validation**: Input validation and sanitization on both client and server
 - **Security**: Password hashing, secure JWT tokens, and CORS protection
-- **🧪 Comprehensive Testing**: Postman collection with automated single device login tests
+- **Comprehensive Testing**: Postman collection with automated single device login tests
 
 ## Tech Stack
 
@@ -42,7 +40,7 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 - Node.js 16 or higher
 - npm or yarn package manager
 
-## 🎯 Quick Start for Users
+## Quick Start for Users
 
 **Want to try the application right now?**
 
@@ -54,11 +52,16 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
    cd Shopping-Cart/backend
    go mod download
    echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
-   go run cmd/seeder/main.go
    go run main.go
    ```
 
-3. **That's it!** The frontend will automatically connect to your local backend at `localhost:8080`
+3. **That's it!** The backend automatically:
+   - Creates the database if it doesn't exist
+   - Seeds 25 sample products (electronics, furniture, accessories)
+   - Creates a default test user (`testuser` / `testpass123`)
+   - Starts the API server on `localhost:8080`
+
+The frontend will automatically connect and you'll see all products ready for shopping!
 
 ## Installation & Setup
 
@@ -76,16 +79,18 @@ cd Shopping-Cart/backend
 go mod download
 
 # 3. Set up environment variables (CRITICAL STEP)
-cp .env.example .env
-# Edit .env file and set JWT_SECRET to a secure random string (minimum 32 characters)
-# Generate one with: openssl rand -base64 32
+echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
+# For production, generate a secure secret: openssl rand -base64 32
 
-# 4. Initialize database with sample data
-go run cmd/seeder/main.go
-
-# 5. Start the backend server
+# 4. Start the backend server (auto-seeds database on first run)
 go run main.go
 ```
+
+**What happens automatically:**
+- ✅ Database creation and table setup
+- ✅ 24 sample products loaded
+- ✅ Default test user created (`testuser` / `testpass123`)
+- ✅ API server starts on `http://localhost:8080`
 
 The backend API will be available at `http://localhost:8080`  
 The frontend will automatically connect to your local backend.
@@ -108,16 +113,18 @@ cd backend
 go mod download
 
 # Set up environment variables (CRITICAL STEP)
-cp .env.example .env
-# Edit .env file and set JWT_SECRET to a secure random string (minimum 32 characters)
-# Generate one with: openssl rand -base64 32
+echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
+# For production, generate a secure secret: openssl rand -base64 32
 
-# Initialize database with sample data
-go run cmd/seeder/main.go
-
-# Start the backend server
+# Start the backend server (auto-seeds database)
 go run main.go
 ```
+
+**Auto-Seeding Features:**
+- 🏪 **25 Products**: Electronics, Gaming gear, Smart Home devices, Office supplies, Health & Fitness items
+- 👤 **Test User**: Username: `testuser`, Password: `testpass123`
+- 🔄 **No Duplicates**: Uses smart seeding that won't create duplicate entries
+- ⚡ **Instant Ready**: Database is populated and ready to use immediately
 
 The backend API will be available at `http://localhost:8080`
 
@@ -164,11 +171,14 @@ The backend runs locally and connects to the deployed frontend. Users only need 
 ### For End Users:
 1. **Access the App**: Go to [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart)
 2. **Setup Backend**: Follow the 2-minute setup in "Quick Start for Users" section above
-3. **Use the App**: Register an account, browse products, add to cart, and place orders!
+3. **Login & Shop**: Use the pre-created account (`testuser` / `testpass123`) or create your own
+4. **Browse Products**: 25 items across 5 categories are automatically loaded
+5. **Test Features**: Add to cart, place orders, and test single device login enforcement!
 
 ### For Developers:
 - **Frontend Code**: Already deployed, but you can run locally with `npm start` in the `/frontend` directory
 - **Backend Code**: Must run locally for the API to work
+- **Database**: Auto-creates and seeds on startup - no manual setup required
 - **Deployment**: Frontend auto-deploys via GitHub Pages, backend runs locally
 
 ⚠️ **Important**: The frontend expects the backend to run on `http://localhost:8080`
@@ -183,8 +193,10 @@ The backend is configured to accept requests from:
 ### How It Works
 1. **Frontend**: Hosted statically on GitHub Pages
 2. **Backend**: Runs locally on user's machine (`localhost:8080`)
-3. **API Communication**: Frontend makes AJAX requests to local backend
-4. **Security**: JWT tokens for authentication, bcrypt for password hashing
+3. **Auto-Seeding**: Database automatically populated with 25 products and test user on startup
+4. **API Communication**: Frontend makes AJAX requests to local backend
+5. **Security**: JWT tokens for authentication, bcrypt for password hashing
+6. **Smart Database**: Uses `FirstOrCreate` to avoid duplicating data on restarts
 
 ## Environment Configuration
 
@@ -270,9 +282,37 @@ A complete 7-step test sequence that validates single device login functionality
 4. **Run the "Single Device Login Tests" folder** to validate the functionality
 5. **Use individual requests** for manual API testing
 
-For detailed instructions, see `Postman_Collection_Guide.md`.
 
-## 📋 Business Requirements Compliance
+## Auto-Seeding
+
+This application includes intelligent auto-seeding that eliminates manual setup:
+
+### What Gets Auto-Created:
+- **Default User**: `testuser` with password `testpass123`
+- **25 Products**: Across 6 categories with realistic prices ($19.99 - $999.99)
+- **Database Tables**: All required tables with proper relationships
+
+### Smart Seeding Benefits:
+- **No Duplicates**: Uses `FirstOrCreate` - safe to restart without duplicating data
+- **Instant Ready**: Start coding/testing immediately without manual data entry
+- **Realistic Data**: Products with varied prices and categories for comprehensive testing
+- **Development-Friendly**: Fresh database? Just restart the server and everything's back
+
+### When Auto-Seeding Runs:
+- Every time the backend starts (`go run main.go`)
+- After database creation or reset
+- Safely handles existing data (won't duplicate)
+
+### Manual Seeding (Optional):
+```bash
+# If you want to run the seeder separately
+cd backend
+go run cmd/seeder/main.go
+```
+
+This feature makes the application truly "plug and play" for developers and users alike!
+
+## Requirements Compliance
 
 This application fully implements the following business requirements:
 
@@ -339,7 +379,7 @@ POST /users
 Content-Type: application/json
 
 {
-  "username": "johndoe",
+  "username": "rocky",
   "password": "securepassword123"
 }
 ```
@@ -372,8 +412,8 @@ Content-Type: application/json
 
 The application uses a relational database with the following structure:
 
-- **Users**: User accounts with encrypted passwords
-- **Items**: Product catalog with pricing and categorization
+- **Users**: User accounts with encrypted passwords and single device login tokens
+- **Items**: Product catalog with 25 pre-seeded products across 5 categories
 - **Carts**: User shopping carts with status tracking
 - **Cart_Items**: Junction table for cart-item relationships with quantities
 - **Orders**: Completed purchases with totals and status
@@ -417,17 +457,17 @@ cd backend
 echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
 ```
 
-**Port 8080 already in use:**
-```bash
-lsof -ti:8080 | xargs kill -9
-```
-
-**Database issues:**
+**Database issues or want fresh data:**
 ```bash
 cd backend
-rm shopping_cart.db  # Delete old database
-go run cmd/seeder/main.go  # Recreate with fresh data
+rm shopping_cart.db  # Delete existing database
+go run main.go       # Restart - auto-creates and seeds fresh database
 ```
+
+**Items not showing up:**
+- The backend auto-seeds 24 products on startup
+- If you see no items, restart the backend: `go run main.go`
+- Check backend logs for "Database seeding complete!" message
 
 ## Security Features
 
@@ -440,19 +480,3 @@ go run cmd/seeder/main.go  # Recreate with fresh data
 - CORS protection
 - SQL injection prevention through ORM
 - Secure random JWT secret generation
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-If you encounter any issues or have questions, please open an issue on GitHub.

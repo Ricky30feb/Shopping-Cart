@@ -19,7 +19,7 @@ func main() {
 }
 
 func seedDatabase() {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("testpass123"), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatalf("Failed to hash password: %v", err)
 	}
@@ -35,10 +35,29 @@ func seedDatabase() {
 
 	items := []models.Item{
 		{Name: "Laptop", Status: "available"},
-		{Name: "Phone", Status: "available"},
-		{Name: "Tablet", Status: "available"},
-		{Name: "Watch", Status: "available"},
+		{Name: "Smartphone", Status: "available"},
 		{Name: "Headphones", Status: "available"},
+		{Name: "Gaming Mouse", Status: "available"},
+		{Name: "Mechanical Keyboard", Status: "available"},
+		{Name: "4K Monitor", Status: "available"},
+		{Name: "Wireless Charger", Status: "available"},
+		{Name: "USB-C Hub", Status: "available"},
+		{Name: "Bluetooth Speaker", Status: "available"},
+		{Name: "Webcam", Status: "available"},
+		{Name: "Power Bank", Status: "available"},
+		{Name: "Tablet", Status: "available"},
+		{Name: "Smart Watch", Status: "available"},
+		{Name: "External SSD", Status: "available"},
+		{Name: "Phone Case", Status: "available"},
+		{Name: "Gaming Chair", Status: "available"},
+		{Name: "Desk Lamp", Status: "available"},
+		{Name: "Coffee Mug", Status: "available"},
+		{Name: "Standing Desk", Status: "available"},
+		{Name: "Drone", Status: "available"},
+		{Name: "VR Headset", Status: "available"},
+		{Name: "Fitness Tracker", Status: "available"},
+		{Name: "Electric Toothbrush", Status: "available"},
+		{Name: "Air Purifier", Status: "available"},
 	}
 
 	for _, item := range items {
