@@ -94,7 +94,6 @@ func seedDatabase() {
 		{Name: "Fitness Tracker", Status: "available"},
 		{Name: "Electric Toothbrush", Status: "available"},
 		{Name: "Air Purifier", Status: "available"},
-		{Name: "Smart Bulb Set", Status: "available"},
 	}
 
 	for _, item := range items {

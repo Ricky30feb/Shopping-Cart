@@ -62,7 +62,7 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 
 3. **That's it!** The backend automatically:
    - Creates the database if it doesn't exist
-   - Seeds 25 sample products (electronics, furniture, accessories)
+   - Seeds 24 sample products (electronics, furniture, accessories)
    - Creates a default test user (`testuser` / `testpass123`)
    - Starts the API server on `localhost:8080`
 
@@ -95,10 +95,10 @@ go run main.go
 ```
 
 **What happens automatically:**
-- ✅ Database creation and table setup
-- ✅ 24 sample products loaded
-- ✅ Default test user created (`testuser` / `testpass123`)
-- ✅ API server starts on `http://localhost:8080`
+- Database creation and table setup
+- 24 sample products loaded
+- Default test user created (`testuser` / `testpass123`)
+- API server starts on `http://localhost:8080`
 
 The backend API will be available at `http://localhost:8080`  
 The frontend will automatically connect to your local backend.
@@ -132,10 +132,9 @@ go run main.go
 ```
 
 **Auto-Seeding Feature:**
-- 🏪 **25 Products**: Electronics, Gaming gear, Smart Home devices, Office supplies, Health & Fitness items
-- 👤 **Test User**: Username: `testuser`, Password: `testpass123`
-- 🔄 **No Duplicates**: Uses smart seeding that won't create duplicate entries
-- ⚡ **Instant Ready**: Database is populated and ready to use immediately
+- **Test User**: Username: `testuser`, Password: `testpass123`
+- **No Duplicates**: Uses smart seeding that won't create duplicate entries
+- **Instant Ready**: Database is populated and ready to use immediately
 
 The backend API will be available at `http://localhost:8080`
 
@@ -183,7 +182,7 @@ The backend runs locally and connects to the deployed frontend. Users only need 
 1. **Access the App**: Go to [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart)
 2. **Setup Backend**: Follow the 2-minute setup in "Quick Start for Users" section above
 3. **Login & Shop**: Use the pre-created account (`testuser` / `testpass123`) or create your own
-4. **Browse Products**: 25 items across 5 categories are automatically loaded
+4. **Browse Products**: 24 items across 5 categories are automatically loaded
 5. **Test Features**: Add to cart, place orders, and test single device login enforcement!
 
 ### For Developers:
@@ -204,7 +203,7 @@ The backend is configured to accept requests from:
 ### How It Works
 1. **Frontend**: Hosted statically on GitHub Pages
 2. **Backend**: Runs locally on user's machine (`localhost:8080`)
-3. **Auto-Seeding**: Database automatically populated with 25 products and test user on startup
+3. **Auto-Seeding**: Database automatically populated with 24 products and test user on startup
 4. **API Communication**: Frontend makes AJAX requests to local backend
 5. **Security**: JWT tokens for authentication, bcrypt for password hashing
 6. **Smart Database**: Uses `FirstOrCreate` to avoid duplicating data on restarts
@@ -300,7 +299,6 @@ This application includes intelligent auto-seeding that eliminates manual setup:
 
 ### What Gets Auto-Created:
 - **Default User**: `testuser` with password `testpass123`
-- **25 Products**: Across 6 categories with realistic prices ($19.99 - $999.99)
 - **Database Tables**: All required tables with proper relationships
 
 ### Smart Seeding Benefits:
@@ -424,7 +422,7 @@ Content-Type: application/json
 The application uses a relational database with the following structure:
 
 - **Users**: User accounts with encrypted passwords and single device login tokens
-- **Items**: Product catalog with 25 pre-seeded products across 5 categories
+- **Items**: Product catalog with 24 pre-loaded products
 - **Carts**: User shopping carts with status tracking
 - **Cart_Items**: Junction table for cart-item relationships with quantities
 - **Orders**: Completed purchases with totals and status
