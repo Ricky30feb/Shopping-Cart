@@ -2,18 +2,10 @@
 
 A modern, production-ready e-commerce application built with Go (Gin framework) backend and React frontend, featuring secure authentication, cart management, and order processing.
 
-## 🌐 Live Demo
+## Live Demo
 
 **Frontend**: [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart) (GitHub Pages)  
 **Backend**: Runs locally on your machine
-
-## ✅ Current Status
-
-- **✅ Frontend**: Successfully deployed on GitHub Pages
-- **✅ Backend**: Configured to run locally with proper CORS settings
-- **✅ Connection**: Frontend-backend communication tested and working
-- **✅ Database**: Sample data seeded and ready to use
-- **✅ Authentication**: JWT-based auth system fully functional
 
 ## Features
 
