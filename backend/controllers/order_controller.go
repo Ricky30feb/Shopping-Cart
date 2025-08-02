@@ -15,14 +15,12 @@ func CreateOrder(c *gin.Context) {
 		return
 	}
 
-	// Find active cart for user
 	var cart models.Cart
 	if err := database.DB.Where("user_id = ? AND status = ?", userID, "active").First(&cart).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No active cart found"})
 		return
 	}
 
-	// Create order
 	order := models.Order{
 		CartID: cart.ID,
 		UserID: userID.(uint),
@@ -33,7 +31,6 @@ func CreateOrder(c *gin.Context) {
 		return
 	}
 
-	// Mark cart as ordered
 	cart.Status = "ordered"
 	database.DB.Save(&cart)
 

@@ -1,11 +1,27 @@
 package utils
 
 import (
+	"fmt"
+	"log"
+	"os"
 	"time"
+
 	"github.com/golang-jwt/jwt"
 )
 
-var jwtKey = []byte("secret_key")
+var jwtKey = []byte(getJWTSecret())
+
+func getJWTSecret() string {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		log.Fatal("JWT_SECRET environment variable is required but not set. Please set it before starting the application.")
+	}
+	if len(secret) < 32 {
+		log.Fatal("JWT_SECRET must be at least 32 characters long for security")
+	}
+	fmt.Println("JWT secret loaded successfully")
+	return secret
+}
 
 type Claims struct {
 	UserID uint `json:"user_id"`

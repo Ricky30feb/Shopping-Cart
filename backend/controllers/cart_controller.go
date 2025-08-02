@@ -30,18 +30,15 @@ func AddItemToCart(c *gin.Context) {
 		return
 	}
 
-	// Verify that the item exists
 	var existingItem models.Item
 	if err := database.DB.First(&existingItem, input.ItemID).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Item not found"})
 		return
 	}
 
-	// Get or create cart for user
 	var cart models.Cart
 	err := database.DB.Where("user_id = ? AND status = ?", userID, "active").First(&cart).Error
 	if err != nil {
-		// Create new cart if none exists
 		cart = models.Cart{
 			UserID: userID.(uint),
 			Status: "active",
@@ -52,7 +49,6 @@ func AddItemToCart(c *gin.Context) {
 		}
 	}
 
-	// Add item to cart
 	cartItem := models.CartItem{
 		CartID: cart.ID,
 		ItemID: input.ItemID,
@@ -80,7 +76,6 @@ func GetCarts(c *gin.Context) {
 	}
 
 	var cartItems []models.CartItem
-	// Only return cart items with valid item IDs (> 0)
 	database.DB.Where("cart_id = ? AND item_id > 0", cart.ID).Find(&cartItems)
 	
 	c.JSON(http.StatusOK, cartItems)

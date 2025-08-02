@@ -17,7 +17,7 @@ const ItemsList = ({ token, onLogout }) => {
   const [items, setItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingItems, setLoadingItems] = useState(new Set());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -38,13 +38,13 @@ const ItemsList = ({ token, onLogout }) => {
   };
 
   const addToCart = async (itemId) => {
-    setLoading(true);
+    setLoadingItems(prev => new Set(prev).add(itemId));
     setError('');
     setSuccess('');
     
     try {
       const response = await axios.post('http://localhost:8080/carts', {
-        item_id: parseInt(itemId) // Ensure it's a number
+        item_id: parseInt(itemId)
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -58,7 +58,11 @@ const ItemsList = ({ token, onLogout }) => {
       setError('Error adding item to cart');
       setTimeout(() => setError(''), 3000);
     } finally {
-      setLoading(false);
+      setLoadingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
     }
   };
 
@@ -77,15 +81,17 @@ const ItemsList = ({ token, onLogout }) => {
         const cartDetails = validCartItems.map(item => 
           `Cart ID: ${item.cart_id}, Item ID: ${item.item_id}`
         ).join('\n');
-        
-        window.alert(`Cart Items:\n${cartDetails}`);
+        console.log(`Cart Items:\n${cartDetails}`);
+        alert(`Cart Items:\n${cartDetails}`);
       } else {
-        window.alert('Your cart is empty');
+        console.log('Your cart is empty');
+        alert('Your cart is empty');
       }
       
       setCartItems(validCartItems);
     } catch (error) {
-      window.alert('Error fetching cart items');
+      console.error('Error fetching cart items:', error);
+      alert('Error fetching cart items');
     } finally {
       setCartLoading(false);
     }
@@ -107,14 +113,17 @@ const ItemsList = ({ token, onLogout }) => {
           `Order ID: ${order.id || order.ID}`
         ).join('\n');
         
-        window.alert(`Order History:\n${orderDetails}`);
+        console.log(`Order History:\n${orderDetails}`);
+        alert(`Order History:\n${orderDetails}`);
       } else {
-        window.alert('No orders found');
+        console.log('No orders found');
+        alert('No orders found');
       }
       
       setOrders(orders);
     } catch (error) {
-      window.alert('Error fetching orders');
+      console.error('Error fetching orders:', error);
+      alert('Error fetching orders');
     } finally {
       setOrdersLoading(false);
     }
@@ -122,7 +131,8 @@ const ItemsList = ({ token, onLogout }) => {
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
-      window.alert('Cannot place an empty order. Add something to cart first.');
+      console.log('Cannot place an empty order. Add something to cart first.');
+      alert('Cannot place an empty order. Add something to cart first.');
       return;
     }
     setCheckoutLoading(true);
@@ -132,14 +142,14 @@ const ItemsList = ({ token, onLogout }) => {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      console.log('Order successful');
+      alert('Order successful');
       
-      // Show toast message as required
-      window.alert('Order successful');
-      
-      // Clear cart
       setCartItems([]);
     } catch (error) {
-      window.alert('Error placing order');
+      console.error('Error placing order:', error);
+      alert('Error placing order');
     } finally {
       setCheckoutLoading(false);
     }
@@ -147,8 +157,10 @@ const ItemsList = ({ token, onLogout }) => {
 
   return (
     <div className="shopping-container">
-      <div className="shopping-wrapper">
-        <div className="shopping-card">
+      <div className="shopping-scroll-overlay">
+        <div className="shopping-content">
+          <div className="shopping-wrapper">
+            <div className="shopping-card">
           {/* Header */}
           <div className="shopping-header">
             <div className="logo">
@@ -239,9 +251,9 @@ const ItemsList = ({ token, onLogout }) => {
                       <button 
                         onClick={() => addToCart(item.id || item.ID)} 
                         className="add-button"
-                        disabled={loading}
+                        disabled={loadingItems.has(item.id || item.ID)}
                       >
-                        {loading ? (
+                        {loadingItems.has(item.id || item.ID) ? (
                           <>
                             <span className="spinner"></span>
                             Adding...
@@ -258,6 +270,8 @@ const ItemsList = ({ token, onLogout }) => {
                 ))}
               </div>
             )}
+          </div>
+            </div>
           </div>
         </div>
       </div>

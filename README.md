@@ -1,251 +1,209 @@
-# Shopping Cart E-commerce Project
+# Shopping Cart - Full Stack E-commerce Application
 
-This is a simple e-commerce shopping cart application built with Go (Gin framework) for the backend and React for the frontend.
+A modern, production-ready e-commerce application built with Go (Gin framework) backend and React frontend, featuring secure authentication, cart management, and order processing.
 
-## Project Structure
+## Features
 
+- **Secure Authentication**: JWT-based user registration and login
+- **Product Catalog**: Browse products with filtering by category and availability
+- **Shopping Cart**: Add items with quantity management and real-time updates
+- **Order Processing**: Complete checkout flow with order history tracking
+- **Responsive Design**: Mobile-first UI that works across all devices
+- **RESTful API**: Well-structured endpoints with comprehensive error handling
+- **Data Validation**: Input validation and sanitization on both client and server
+- **Security**: Password hashing, secure JWT tokens, and CORS protection
+
+## Tech Stack
+
+### Backend
+- **Go 1.19+** - High-performance backend language
+- **Gin** - Fast HTTP web framework with middleware support
+- **GORM** - Feature-rich ORM with migrations and relationships
+- **SQLite/PostgreSQL** - Database layer with environment-based configuration
+- **JWT** - Stateless authentication with secure token management
+- **bcrypt** - Industry-standard password hashing
+
+### Frontend
+- **React 18+** - Modern UI library with hooks
+- **Axios** - Promise-based HTTP client
+- **React Icons** - Comprehensive icon library
+- **CSS3** - Responsive design with CSS Grid and Flexbox
+
+## Prerequisites
+
+- Go 1.19 or higher
+- Node.js 16 or higher
+- npm or yarn package manager
+
+## Installation
+
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd shopping-cart
 ```
-ShoppingCart/
-├── backend/           # Go backend API
-│   ├── controllers/   # API controllers
-│   ├── database/     # Database connection
-│   ├── middleware/   # Auth middleware
-│   ├── models/       # Data models
-│   ├── utils/        # Utility functions
-│   ├── go.mod        # Go dependencies
-│   └── main.go       # Main application
-└── frontend/         # React frontend
-    ├── src/
-    │   ├── components/
-    │   │   ├── Login.js
-    │   │   ├── Login.css
-    │   │   ├── ItemsList.js
-    │   │   └── ItemsList.css
-    │   ├── App.js
-    │   └── App.css
-    └── package.json
+
+### 2. Backend Setup
+```bash
+cd backend
+
+# Install Go dependencies
+go mod download
+
+# Set up environment variables (CRITICAL STEP)
+cp .env.example .env
+# Edit .env file and set JWT_SECRET to a secure random string (minimum 32 characters)
+# Generate one with: openssl rand -base64 32
+
+# Initialize database with sample data
+go run cmd/seeder/main.go
+
+# Start the backend server
+go run main.go
+```
+
+The backend API will be available at `http://localhost:8080`
+
+### 3. Frontend Setup
+```bash
+cd frontend
+
+# Install Node.js dependencies
+npm install
+
+# Start the development server
+npm start
+```
+
+The frontend application will be available at `http://localhost:3000`
+
+## Environment Configuration
+
+### Required Environment Variables
+
+Create a `.env` file in the backend directory based on `.env.example`:
+
+```bash
+# Security (REQUIRED - Application will not start without this)
+JWT_SECRET=your_secure_random_string_minimum_32_characters
+# Generate with: openssl rand -base64 32
+
+# Server Configuration (Optional)
+PORT=8080
+GIN_MODE=debug  # Use 'release' for production
+
+# Database (Optional - SQLite used by default)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=shopping_cart
+
+# CORS Settings (Optional)
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+⚠️ **Important**: The application will fail to start if `JWT_SECRET` is not set or is less than 32 characters long.
+
+## API Documentation
+
+### Authentication Endpoints
+- `POST /users` - Register new user
+- `POST /users/login` - Authenticate user
+- `GET /users` - Get all users (admin)
+
+### Product Endpoints
+- `GET /items` - Get all products (supports filtering)
+- `POST /items` - Create new product
+
+### Cart Endpoints (Authenticated)
+- `POST /carts` - Add item to cart
+- `GET /carts` - Get user's cart items
+
+### Order Endpoints (Authenticated)
+- `POST /orders` - Create order (checkout)
+- `GET /orders` - Get user's order history
+
+### Request/Response Examples
+
+#### User Registration
+```bash
+POST /users
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "password": "securepassword123"
+}
+```
+
+#### Add Item to Cart
+```bash
+POST /carts
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "item_id": 1,
+  "quantity": 2
+}
 ```
 
 ## Database Schema
 
-The application uses the following entities:
+The application uses a relational database with the following structure:
 
-### Users
-- id (int, primary key)
-- username (varchar)
-- password (varchar)
-- token (varchar)
-- cart_id (int)
-- created_at (timestamp)
+- **Users**: User accounts with encrypted passwords
+- **Items**: Product catalog with pricing and categorization
+- **Carts**: User shopping carts with status tracking
+- **Cart_Items**: Junction table for cart-item relationships with quantities
+- **Orders**: Completed purchases with totals and status
 
-### Carts
-- id (int, primary key)
-- user_id (int)
-- name (varchar)
-- status (varchar)
-- created_at (timestamp)
+## Development
 
-### Items
-- id (int, primary key)
-- name (varchar)
-- status (varchar)
-- created_at (timestamp)
+### Running Tests
+```bash
+# Backend tests
+cd backend
+go test ./...
 
-### Orders
-- id (int, primary key)
-- cart_id (int)
-- user_id (int)
-- created_at (timestamp)
+# Frontend tests
+cd frontend
+npm test
+```
 
-### Cart_Items
-- cart_id (int)
-- item_id (int)
+### Building for Production
+```bash
+# Backend build
+cd backend
+go build -o shopping-cart-api main.go
 
-## API Endpoints
+# Frontend build
+cd frontend
+npm run build
+```
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /users | Creates a new User |
-| GET | /users | List all users |
-| POST | /users/login | Login for existing user based on username and password |
-| POST | /items | Creates an Item |
-| GET | /items | List all items |
-| POST | /carts* | Create and adds Items to the cart |
-| GET | /carts* | List all carts |
-| POST | /orders* | Pass the cart id to convert it to an order |
-| GET | /orders* | List all orders |
+## Security Features
 
-*The user's token must be present in the cart related endpoint request to identify which user the cart belongs to.
+- Password hashing with bcrypt
+- JWT token authentication with expiration
+- Input validation and sanitization
+- CORS protection
+- SQL injection prevention through ORM
+- Secure random JWT secret generation
 
-## How to Run the Project
+## Contributing
 
-### Prerequisites
-- Go 1.23+ installed
-- Node.js 14+ and npm installed
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Backend (Go/Gin)
+## License
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-2. Install dependencies:
-   ```bash
-   go mod tidy
-   ```
+## Support
 
-3. Set GOPATH (if needed):
-   ```bash
-   export GOPATH=/Users/kushagrakulshrestha/Desktop/ShoppingCart/go
-
-4. Run the application:
-   ```bash
-   go run .
-   ```
-   The backend server will start on `http://localhost:8080`.
-
-### Frontend (React)
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Run the application:
-   ```bash
-   npm start
-   ```
-   The frontend development server will start on `http://localhost:3000`.
-
-   ```
-
-4. Run the backend server:
-   ```bash
-   go run .
-   ```
-
-The backend will start on `http://localhost:8080`
-
-### Frontend (React)
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the React development server:
-   ```bash
-   npm start
-   ```
-
-The frontend will start on `http://localhost:3000`
-
-## Test User
-
-A test user is automatically created when the backend starts:
-- Username: `testuser`
-- Password: `password`
-
-## Testing the API
-
-### Using Postman
-Import the provided Postman collection file: `Shopping_Cart_API.postman_collection.json`
-
-### Manual Testing Steps:
-
-1. **Login to get token:**
-   ```bash
-   curl -X POST http://localhost:8080/users/login \
-     -H "Content-Type: application/json" \
-     -d '{"username": "testuser", "password": "password"}'
-   ```
-
-2. **Get all items:**
-   ```bash
-   curl -X GET http://localhost:8080/items
-   ```
-
-3. **Add item to cart (replace TOKEN with actual token):**
-   ```bash
-   curl -X POST http://localhost:8080/carts \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer TOKEN" \
-     -d '{"item_id": 1}'
-   ```
-
-4. **View cart items:**
-   ```bash
-   curl -X GET http://localhost:8080/carts \
-     -H "Authorization: Bearer TOKEN"
-   ```
-
-5. **Create order (checkout):**
-   ```bash
-   curl -X POST http://localhost:8080/orders \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer TOKEN" \
-     -d '{}'
-   ```
-
-6. **View orders:**
-   ```bash
-   curl -X GET http://localhost:8080/orders \
-     -H "Authorization: Bearer TOKEN"
-   ```
-
-## How to Use the Application
-
-1. **Login**: Enter the username and password on the login screen
-2. **Browse Items**: After successful login, you'll see a list of available items
-3. **Add to Cart**: Click on any item to add it to your cart
-4. **View Cart**: Click the "Cart" button to see items in your cart (displays cart_id and item_id)
-5. **Order History**: Click the "Order History" button to see your placed orders
-6. **Checkout**: Click the "Checkout" button to convert your cart into an order
-7. **Logout**: Click the "Logout" button to return to the login screen
-
-## Features
-
-- User authentication with JWT tokens
-- Add items to cart
-- View cart contents
-- Place orders (checkout)
-- View order history
-- Clean and professional UI
-- Responsive design
-
-## Technologies Used
-
-### Backend
-- Go
-- Gin (Web framework)
-- GORM (ORM)
-- SQLite (Database)
-- JWT (Authentication)
-- bcrypt (Password hashing)
-
-### Frontend
-- React
-- Axios (HTTP client)
-- CSS3 (Styling)
-
-## Database
-
-The application uses SQLite database which is automatically created when the backend starts. The database file `shopping_cart.db` will be created in the backend directory.
-
-Sample items are automatically seeded into the database on startup:
-- Laptop
-- Phone  
-- Tablet
-- Watch
-- Headphones
+If you encounter any issues or have questions, please open an issue on GitHub.

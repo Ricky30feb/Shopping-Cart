@@ -53,7 +53,6 @@ const Login = ({ onLogin }) => {
     setLoading(true);
     try {
       if (isLoginMode) {
-        // Login
         const response = await axios.post('http://localhost:8080/users/login', {
           username,
           password
@@ -63,7 +62,6 @@ const Login = ({ onLogin }) => {
           onLogin(response.data.token);
         }
       } else {
-        // Sign Up
         await axios.post('http://localhost:8080/users', {
           username,
           password
@@ -75,7 +73,8 @@ const Login = ({ onLogin }) => {
       }
     } catch (error) {
       if (isLoginMode) {
-        window.alert('Invalid username/password');
+        console.error('Login failed:', error);
+        setError('Invalid username or password. Please try again.');
       } else {
         setError('Username already exists or registration failed. Please try again.');
       }
