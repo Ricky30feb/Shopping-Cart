@@ -10,6 +10,7 @@ import {
   FaCheck,
   FaLockOpen
 } from 'react-icons/fa';
+import { API_BASE_URL } from '../config';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
@@ -53,7 +54,7 @@ const Login = ({ onLogin }) => {
     setLoading(true);
     try {
       if (isLoginMode) {
-        const response = await axios.post('http://localhost:8080/users/login', {
+        const response = await axios.post(`${API_BASE_URL}/users/login`, {
           username,
           password
         });
@@ -62,7 +63,7 @@ const Login = ({ onLogin }) => {
           onLogin(response.data.token);
         }
       } else {
-        await axios.post('http://localhost:8080/users', {
+        await axios.post(`${API_BASE_URL}/users`, {
           username,
           password
         });

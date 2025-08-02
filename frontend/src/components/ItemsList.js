@@ -11,6 +11,7 @@ import {
   FaCreditCard,
   FaHistory
 } from 'react-icons/fa';
+import { API_BASE_URL } from '../config';
 import './ItemsList.css';
 
 const ItemsList = ({ token, onLogout }) => {
@@ -30,7 +31,7 @@ const ItemsList = ({ token, onLogout }) => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/items');
+      const response = await axios.get(`${API_BASE_URL}/items`);
       setItems(response.data || []);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -43,7 +44,7 @@ const ItemsList = ({ token, onLogout }) => {
     setSuccess('');
     
     try {
-      const response = await axios.post('http://localhost:8080/carts', {
+      const response = await axios.post(`${API_BASE_URL}/carts`, {
         item_id: parseInt(itemId)
       }, {
         headers: {
@@ -69,7 +70,7 @@ const ItemsList = ({ token, onLogout }) => {
   const showCart = async () => {
     setCartLoading(true);
     try {
-      const response = await axios.get('http://localhost:8080/carts', {
+      const response = await axios.get(`${API_BASE_URL}/carts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -100,7 +101,7 @@ const ItemsList = ({ token, onLogout }) => {
   const showOrderHistory = async () => {
     setOrdersLoading(true);
     try {
-      const response = await axios.get('http://localhost:8080/orders', {
+      const response = await axios.get(`${API_BASE_URL}/orders`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -137,7 +138,7 @@ const ItemsList = ({ token, onLogout }) => {
     }
     setCheckoutLoading(true);
     try {
-      await axios.post('http://localhost:8080/orders', {}, {
+      await axios.post(`${API_BASE_URL}/orders`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -2,6 +2,11 @@
 
 A modern, production-ready e-commerce application built with Go (Gin framework) backend and React frontend, featuring secure authentication, cart management, and order processing.
 
+## 🌐 Live Demo
+
+**Frontend**: [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart) (GitHub Pages)  
+**Backend**: Runs locally on your machine
+
 ## Features
 
 - **Secure Authentication**: JWT-based user registration and login
@@ -35,12 +40,44 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 - Node.js 16 or higher
 - npm or yarn package manager
 
-## Installation
+## Installation & Setup
+
+### Option 1: Use Live Frontend + Local Backend (Recommended)
+
+**Frontend**: Already deployed at [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart)
+
+**Backend Setup** (Required):
+```bash
+# 1. Clone the repository
+git clone https://github.com/Ricky30feb/Shopping-Cart.git
+cd Shopping-Cart/backend
+
+# 2. Install Go dependencies
+go mod download
+
+# 3. Set up environment variables (CRITICAL STEP)
+cp .env.example .env
+# Edit .env file and set JWT_SECRET to a secure random string (minimum 32 characters)
+# Generate one with: openssl rand -base64 32
+
+# 4. Initialize database with sample data
+go run cmd/seeder/main.go
+
+# 5. Start the backend server
+go run main.go
+```
+
+The backend API will be available at `http://localhost:8080`  
+The frontend will automatically connect to your local backend.
+
+### Option 2: Full Local Development
+
+If you want to run both frontend and backend locally:
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
-cd shopping-cart
+git clone https://github.com/Ricky30feb/Shopping-Cart.git
+cd Shopping-Cart
 ```
 
 ### 2. Backend Setup
@@ -76,6 +113,31 @@ npm start
 ```
 
 The frontend application will be available at `http://localhost:3000`
+
+## 🚀 Deployment
+
+### Frontend Deployment (GitHub Pages)
+
+The frontend is configured for GitHub Pages deployment:
+
+```bash
+cd frontend
+
+# Build and deploy to GitHub Pages
+npm run deploy
+```
+
+This will:
+1. Build the React application
+2. Deploy it to GitHub Pages
+3. Make it available at `https://Ricky30feb.github.io/Shopping-Cart`
+
+### Backend Deployment
+
+The backend runs locally and connects to the deployed frontend. Users only need to:
+1. Clone the repository
+2. Set up the backend locally (see installation instructions above)
+3. Access the live frontend which will connect to their local backend
 
 ## Environment Configuration
 
