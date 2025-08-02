@@ -7,6 +7,14 @@ A modern, production-ready e-commerce application built with Go (Gin framework) 
 **Frontend**: [https://Ricky30feb.github.io/Shopping-Cart](https://Ricky30feb.github.io/Shopping-Cart) (GitHub Pages)  
 **Backend**: Runs locally on your machine
 
+## ✅ Current Status
+
+- **✅ Frontend**: Successfully deployed on GitHub Pages
+- **✅ Backend**: Configured to run locally with proper CORS settings
+- **✅ Connection**: Frontend-backend communication tested and working
+- **✅ Database**: Sample data seeded and ready to use
+- **✅ Authentication**: JWT-based auth system fully functional
+
 ## Features
 
 - **Secure Authentication**: JWT-based user registration and login
@@ -171,6 +179,19 @@ The backend runs locally and connects to the deployed frontend. Users only need 
 
 ⚠️ **Important**: The frontend expects the backend to run on `http://localhost:8080`
 
+## 🔧 Technical Notes
+
+### CORS Configuration
+The backend is configured to accept requests from:
+- `http://localhost:3000` (local development)
+- `https://ricky30feb.github.io` (GitHub Pages deployment)
+
+### How It Works
+1. **Frontend**: Hosted statically on GitHub Pages
+2. **Backend**: Runs locally on user's machine (`localhost:8080`)
+3. **API Communication**: Frontend makes AJAX requests to local backend
+4. **Security**: JWT tokens for authentication, bcrypt for password hashing
+
 ## Environment Configuration
 
 ### Required Environment Variables
@@ -275,6 +296,33 @@ go build -o shopping-cart-api main.go
 # Frontend build
 cd frontend
 npm run build
+```
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+**Frontend can't connect to backend:**
+- Ensure backend is running on `http://localhost:8080`
+- Check that JWT_SECRET is set in `.env` file
+- Verify CORS settings allow your frontend origin
+
+**"JWT_SECRET environment variable is required" error:**
+```bash
+cd backend
+echo 'JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters' > .env
+```
+
+**Port 8080 already in use:**
+```bash
+lsof -ti:8080 | xargs kill -9
+```
+
+**Database issues:**
+```bash
+cd backend
+rm shopping_cart.db  # Delete old database
+go run cmd/seeder/main.go  # Recreate with fresh data
 ```
 
 ## Security Features
