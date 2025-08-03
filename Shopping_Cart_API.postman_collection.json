@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Shopping Cart API",
-    "description": "API collection for the Shopping Cart e-commerce application with single device login enforcement. Includes comprehensive tests for authentication, cart management, order processing, and single device login validation. Single device login prevents users from logging in from multiple devices simultaneously - subsequent login attempts are rejected until the first session is explicitly logged out.",
+    "description": "API collection for the Shopping Cart e-commerce application with single device login implementation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
